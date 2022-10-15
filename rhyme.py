@@ -1,6 +1,9 @@
-
 import random
 import os    
+import time
+from msvcrt import getwch
+from colors import bcolors
+from rhyme_functions import splash_screen
 
 
 def check_rhyme(what_rhyme, what_word):
@@ -19,28 +22,65 @@ def check_validity(what_rhyme, what_word):
             return False     #Word does not rhyme
         
     
+def ai_feedback():
+    quick_feedback = ["Good!",
+                      "Nice.",
+                      "Good.",
+                      "You got lucky ;)",
+                      "Nicely done!",
+                      "Sweet!",
+                      "OK!",
+                      "Nice choice.",
+                      "Hmm...",
+                      "Excellent!",
+                      "Awesome!",
+                      "Fine job.",
+                      "Aha! That one.",
+                      "OK.",
+                      "Very nice.",
+                      "Superb!"]
+
+    x = random.randint(0, len(quick_feedback) - 1)
+
+    return quick_feedback[x]
+
+
 def ai_comment():
-    ai_comments = ["Snyggt!",
-                   "Bra, min tur...",
-                   "Du hade tur där ;)",
-                   "Bra gjort!",
-                   "Fint!",
-                   "OK, min tur...",
-                   "Det var ett nytt ord!",
-                   "Hm. Jag tänkte ta det ordet...",
-                   "Sweet!"]
-    
-    comment_no = int(random.randrange(0, 8, 1))
-    
-    return ai_comments[comment_no]
+    quick_comment = ["I choose",
+                     "I pick",
+                     "I'll go with",
+                     "My turn",
+                     "My choice",
+                     "Let's try",
+                     "Rhymes with",
+                     "My word"]
+ 
+    x = random.randint(0, len(quick_comment) - 1)
+
+    return quick_comment[x]
+
+
+def check_rhyme(what_rhyme, what_word):
+    if what_rhyme == "light":
+        if what_word in rhymes_used:
+            return False    #word already used - no go!
+        else:
+            return True     #Word not used - go ahead        
     
 
-def check_player(word):
-    rhymes_used.append(word)
+def check_validity(what_rhyme, what_word):
+    if what_rhyme == "light":
+        if what_word in rhymes_light:
+            return True       #word rhymes!
+        else:
+            return False     #Word does not rhyme
+        
 
 rhymes_light = ["knight",
                 "bright",
+                "fright",
                 "flight",
+                "fight",
                 "night",
                 "shite",
                 "blight",
@@ -52,79 +92,117 @@ rhymes_light = ["knight",
                 "slight",
                 "might",
                 "height",
-                "tight",
                 "nite",
+                "aiit",
                 "bite",
+                "pike",
                 "kite",
                 "rite",
+                "lite",
+                "cite",
                 "spite",
+                "trite",
                 "quite",
-                "fight"]
+                "dight",
+                "bight",
+                "byte",
+                "mite",
+                "site",
+                "sleight",
+                "smite",
+                "sprite",
+                "twite",
+                "wight",
+                "write"]
 
-rhymes_used = []
+first_game = 1
 
-os.system('cls')
-total_light_words = 21
-total_words_played = 0
-current_rhyme = "light"
-first_turn = True
-selected_word = "light"
-
-
-print("""
-Välkommen till Rimspelet! ----------------------------------------------------
-Välj ett ord du vill tävla i. Skriv ett rimmande ord (på en stavelse ej samma)
-Om du kan fler ord än mig vinner du! Kan du inte fler ord tryck ENTER.\n""")
-
-print(f"Ord som rimmar på {selected_word} - Lycka till!")
-    
 while True:
-    if total_words_played == total_light_words:
-        print("Jag vann - finns inga fler rim! Om du inte tror mig - kolla upp!")
-        break
-        
-    while True:
-        if first_turn:
-            entry = input("Ord: ").lower()
-        else:
-            entry = input("Din tur: ").lower()
-       
-        entry = entry.replace(" ", "")
-        
-        if entry == "":
-            print("Jag vann!")
-            break
-        
-        if not check_validity(current_rhyme, entry):
-            print("Det ordet rimmar inte - prova igen!\n")
-            continue
-        
-        if check_rhyme(current_rhyme, entry):
-            total_words_played += 1
-            rhymes_used.append(entry)
-            break
-        else:
-            print("Ordet har redan använts\n")
-            continue
-            
-    first_turn = False
-    
-    if total_words_played >= total_light_words:
-        print("Du vann - jag ger upp!")
-        break
-    
+    os.system('cls')
+    rhymes_used = []
+
+    total_light_words = len(rhymes_light)
+    total_words_played = 0
+    turns_left = 5
+    current_rhyme = "light"
+    still_playing = True
+
+    print(bcolors.YELLOW)
+    splash_screen(first_game)
+    print(bcolors.CYAN + f"\nLet's play words that rhyme with {current_rhyme}.\nYou start. Good luck!\n")
 
     while True:
-        what_word = random.randrange(0, total_light_words, 1)
-        ai_choice = rhymes_light[what_word]
+        if total_words_played == total_light_words:             #No more rhymes - player loses!           
+            winning = False                          
+            still_playing = False
+            break
+
+        total_words_played += 1
         
-        if ai_choice in rhymes_used:
-            continue
-        else:
-            total_words_played += 1
-            rhymes_used.append(ai_choice)
+        while True:
+            if turns_left == 0:
+                winning = False
+                still_playing = False
+                break
+
+            print(bcolors.YELLOW + f"{total_words_played}) " + bcolors.ENDC + "Your turn: ", end="")
+            entry = input(bcolors.YELLOW).lower()
+            entry = entry.replace(" ", "")
+            
+            if entry == "":
+                winning = False
+                still_playing = False
+                break
+            
+            if not check_validity(current_rhyme, entry):
+                turns_left -= 1
+                print(bcolors.CYAN + f"Sorry, that doesn't rhyme! " + bcolors.FAIL + f"You have: {turns_left} tries left.\n")
+                continue
+            
+            if check_rhyme(current_rhyme, entry):
+                turns_left = 5
+                rhymes_used.append(entry)
+                break
+            else:
+                print(bcolors.CYAN + "The word has already been played. Try again!\n")
+                continue
+        
+        if not still_playing: break
+    
+        if total_words_played == total_light_words:
+            winning = True
+            still_playing = False
             break
         
-    give_comment = ai_comment()
-    print(f"{give_comment} Mitt ord: {ai_choice}")
-             
+        while True:
+            what_word = random.randint(0, total_light_words - 1)
+            ai_choice = rhymes_light[what_word]
+            
+            if ai_choice in rhymes_used:
+                continue
+            else:
+                total_words_played += 1
+                rhymes_used.append(ai_choice)
+                break
+        
+        give_feedback = ai_feedback()
+        give_comment = ai_comment()
+    
+        print(bcolors.YELLOW + f"{total_words_played}) " + bcolors.ENDC + f"{give_feedback} {give_comment}: " + bcolors.YELLOW + f"{ai_choice}\n")
+
+    if winning:
+        print(bcolors.GREEN + bcolors.BOLD + "YOU WIN - I give up!")
+    else:
+        print(bcolors.FAIL + bcolors.BOLD + "YOU LOSE - I win!")
+
+    print(bcolors.YELLOW + "\nPlay again? (Y)es / (N)o")
+    key_stroke = getwch().upper() 
+        
+    if key_stroke == "N":    
+        print(bcolors.CYAN + "Thanks for playing!")
+        print(bcolors.ENDC)                 # Restore default system colors
+        time.sleep(2)
+        exit()
+    else:
+        first_game = 2
+        continue
