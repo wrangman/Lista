@@ -133,44 +133,45 @@ while True:
 
     while True:
         if total_words_played == total_light_words:             #No more rhymes - player loses!           
-            winning = False                          
+            game_state = 1
             still_playing = False
             break
 
         total_words_played += 1
         
         while True:
-            if turns_left == 0:
-                winning = False
+            if turns_left == 0:                                 #No more attempts - player loses!
+                game_state = 4
                 still_playing = False
                 break
-
+            
             print(bcolors.YELLOW + f"{total_words_played}) " + bcolors.ENDC + "Your turn: ", end="")
             entry = input(bcolors.YELLOW).lower()
             entry = entry.replace(" ", "")
             
             if entry == "":
-                winning = False
-                still_playing = False
+                game_state = 3
+                still_playing = False        
                 break
             
-            if not check_validity(current_rhyme, entry):
-                turns_left -= 1
-                print(bcolors.CYAN + f"Sorry, that doesn't rhyme! " + bcolors.FAIL + f"You have: {turns_left} tries left.\n")
-                continue
-            
-            if check_rhyme(current_rhyme, entry):
-                turns_left = 5
-                rhymes_used.append(entry)
-                break
-            else:
-                print(bcolors.CYAN + "The word has already been played. Try again!\n")
-                continue
+            if still_playing:
+                if not check_validity(current_rhyme, entry):
+                    turns_left -= 1
+                    print(bcolors.FAIL + f"Sorry, that doesn't rhyme! You have: {turns_left} attempt(s) left.\n")
+                    continue
+                
+                if check_rhyme(current_rhyme, entry):
+                    turns_left = 5
+                    rhymes_used.append(entry)
+                    break
+                else:
+                    print(bcolors.CYAN + "The word has already been played. Try again!\n")
+                    continue
         
         if not still_playing: break
     
         if total_words_played == total_light_words:
-            winning = True
+            game_state = 2
             still_playing = False
             break
         
@@ -190,16 +191,21 @@ while True:
     
         print(bcolors.YELLOW + f"{total_words_played}) " + bcolors.ENDC + f"{give_feedback} {give_comment}: " + bcolors.YELLOW + f"{ai_choice}\n")
 
-    if winning:
-        print(bcolors.GREEN + bcolors.BOLD + "YOU WIN - I give up!")
-    else:
-        print(bcolors.FAIL + bcolors.BOLD + "YOU LOSE - I win!")
+    if game_state == 1:
+        print(bcolors.GREEN + bcolors.BOLD + "YOU WIN - I don't know any more words!")
+    elif game_state == 2:
+        print(bcolors.FAIL + bcolors.BOLD + "I WIN - There are no more rhymes!")
+    elif game_state == 3:
+        print(bcolors.FAIL + bcolors.BOLD + "I WIN - You gave up!")
+    elif game_state == 4:
+        print(bcolors.FAIL + bcolors.BOLD + "I WIN - You ran out of attempts!")
+        
 
-    print(bcolors.YELLOW + "\nPlay again? (Y)es / (N)o")
+    print(bcolors.YELLOW + "\nPlay again? (Y)es / (N)o ", end="")
     key_stroke = getwch().upper() 
         
     if key_stroke == "N":    
-        print(bcolors.CYAN + "Thanks for playing!")
+        print(bcolors.CYAN + "\nThanks for playing!")
         print(bcolors.ENDC)                 # Restore default system colors
         time.sleep(2)
         exit()
